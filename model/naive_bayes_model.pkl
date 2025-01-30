@@ -1,0 +1,32 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+import joblib
+
+# Load data
+data = pd.read_csv('data/fake_news_data.csv')
+
+# Preprocessing
+def preprocess_text(text):
+    return " ".join(text.lower().split())
+
+data['cleaned_text'] = data['text'].apply(preprocess_text)
+
+# TF-IDF Vectorization
+tfidf = TfidfVectorizer(max_features=5000)
+X = tfidf.fit_transform(data['cleaned_text']).toarray()
+y = data['label']
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train Naïve Bayes model
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Save model and TF-IDF vectorizer
+joblib.dump(model, 'models/naive_bayes_model.pkl')
+joblib.dump(tfidf, 'models/tfidf_vectorizer.pkl')
+
+print("Model and vectorizer saved successfully!")
